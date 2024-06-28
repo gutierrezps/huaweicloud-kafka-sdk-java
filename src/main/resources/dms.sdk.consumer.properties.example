@@ -7,10 +7,10 @@ bootstrap.servers=ip1:port1,ip2:port2,ip3:port3
 # Configuring the same group.id for different processes indicates that the processes belong to the same consumer group.
 group.id=2
 
-# Method of turning the key into bytes
+# Method of turning bytes into key
 key.deserializer=org.apache.kafka.common.serialization.StringDeserializer
 
-# Method of turning the value into bytes
+# Method of turning bytes into value
 value.deserializer=org.apache.kafka.common.serialization.StringDeserializer
 
 # Offset reset policy
@@ -23,19 +23,28 @@ auto.offset.reset=earliest
 
 # Set the SASL authentication mechanism, username, and password.
 # sasl.mechanism indicates the SASL authentication mechanism. username and password indicate the username and password
-sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required \
-    username="username" \
-    password="password";
 
 # If the SASL mechanism is PLAIN, the configuration is as follows:
+# ------------
 # sasl.mechanism=PLAIN
+# sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required \
+#    username="username" \
+#    password="password";
+# ------------
 
 # If the SASL mechanism is SCRAM-SHA-512, the configuration is as follows:
+# ------------
 sasl.mechanism=SCRAM-SHA-512
+sasl.jaas.config=org.apache.kafka.common.security.scram.ScramLoginModule required \
+    username="username" \
+    password="password";
+# ------------
+
 
 # Set security.protocol.
-# ----------------------------
+
 # If the security protocol is SASL_SSL, the configuration is as follows:
+# ------------
 security.protocol=SASL_SSL
 
 # ssl truststore.location is the path for storing the SSL certificate.
@@ -50,7 +59,9 @@ ssl.truststore.password=dms@kafka
 # ssl.endpoint.identification.algorithm indicates whether to verify the certificate domain name.
 # This parameter must be left blank, which indicates disabling domain name verification.
 ssl.endpoint.identification.algorithm=
+# ------------
 
-# ----------------------------
 # If the security protocol is SASL_PLAINTEXT, the configuration is as follows:
+# ------------
 # security.protocol=SASL_PLAINTEXT
+# ------------

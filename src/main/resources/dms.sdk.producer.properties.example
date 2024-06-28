@@ -24,19 +24,28 @@ retries=0
 
 # Set the SASL authentication mechanism, username, and password.
 # sasl.mechanism indicates the SASL authentication mechanism. username and password indicate the username and password
-sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required \
-    username="username" \
-    password="password";
 
 # If the SASL mechanism is PLAIN, the configuration is as follows:
+# ------------
 # sasl.mechanism=PLAIN
+# sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required \
+#    username="username" \
+#    password="password";
+# ------------
 
 # If the SASL mechanism is SCRAM-SHA-512, the configuration is as follows:
+# ------------
 sasl.mechanism=SCRAM-SHA-512
+sasl.jaas.config=org.apache.kafka.common.security.scram.ScramLoginModule required \
+    username="username" \
+    password="password";
+# ------------
+
 
 # Set security.protocol.
-# ----------------------------
+
 # If the security protocol is SASL_SSL, the configuration is as follows:
+# ------------
 security.protocol=SASL_SSL
 
 # ssl truststore.location is the path for storing the SSL certificate.
@@ -52,6 +61,9 @@ ssl.truststore.password=dms@kafka
 # This parameter must be left blank, which indicates disabling domain name verification.
 ssl.endpoint.identification.algorithm=
 
-# ----------------------------
+# ------------
+
 # If the security protocol is SASL_PLAINTEXT, the configuration is as follows:
+# ------------
 # security.protocol=SASL_PLAINTEXT
+# ------------
