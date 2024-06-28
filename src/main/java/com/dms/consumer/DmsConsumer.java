@@ -8,7 +8,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Properties;
 
 public class DmsConsumer {
 
@@ -18,12 +21,14 @@ public class DmsConsumer {
 
     DmsConsumer(String path) {
         Properties props = new Properties();
-        try (InputStream in = new BufferedInputStream(new FileInputStream(path))) {
+        try {
+            InputStream in = new BufferedInputStream(new FileInputStream(path));
             props.load(in);
         } catch (IOException e) {
             e.printStackTrace();
+            return;
         }
-        consumer = new KafkaConsumer<>(props);
+        consumer = new KafkaConsumer<Object, Object>(props);
     }
 
     DmsConsumer() {
@@ -34,19 +39,7 @@ public class DmsConsumer {
             e.printStackTrace();
             return;
         }
-        consumer = new KafkaConsumer<>(props);
-    }
-
-    public void consume(List<String> topics) {
-        consumer.subscribe(topics);
-    }
-
-    public ConsumerRecords<Object, Object> poll(long timeout) {
-        return consumer.poll(timeout);
-    }
-
-    public void close() {
-        consumer.close();
+        consumer = new KafkaConsumer<Object, Object>(props);
     }
 
     /**
@@ -65,21 +58,19 @@ public class DmsConsumer {
     }
 
     /**
-     * 从classpath 加载配置信息
+     * Load configuration information from classpath.
      *
-     * @param configFileName 配置文件名称
-     * @return 配置信息
+     * @param configFileName Configuration file name
+     * @return Configuration information
      * @throws IOException
      */
     public static Properties loadFromClasspath(String configFileName) throws IOException {
-        return getProperties(configFileName, getCurrentClassLoader());
-    }
-
-    public static Properties getProperties(String configFileName, ClassLoader currentClassLoader) throws IOException {
+        ClassLoader classLoader = getCurrentClassLoader();
         Properties config = new Properties();
 
-        List<URL> properties = new ArrayList<>();
-        Enumeration<URL> propertyResources = currentClassLoader.getResources(configFileName);
+        List<URL> properties = new ArrayList<URL>();
+        Enumeration<URL> propertyResources = classLoader
+                .getResources(configFileName);
         while (propertyResources.hasMoreElements()) {
             properties.add(propertyResources.nextElement());
         }
@@ -98,5 +89,17 @@ public class DmsConsumer {
         }
 
         return config;
+    }
+
+    public void consume(List topics) {
+        consumer.subscribe(topics);
+    }
+
+    public ConsumerRecords<Object, Object> poll(long timeout) {
+        return consumer.poll(timeout);
+    }
+
+    public void close() {
+        consumer.close();
     }
 }

@@ -10,112 +10,118 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 
-import com.dms.consumer.DmsConsumer;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
 public class DmsProducer<K, V> {
-
+    //Add the producer configurations that have been specified earlier.
     public static final String CONFIG_PRODUCER_FILE_NAME = "dms.sdk.producer.properties";
 
     private Producer<K, V> producer;
 
-    DmsProducer(String path) {
+    DmsProducer(String path)
+    {
         Properties props = new Properties();
-        try (InputStream in = new BufferedInputStream(new FileInputStream(path))) {
+        try {
+            InputStream in = new BufferedInputStream(new FileInputStream(path));
             props.load(in);
-        } catch (IOException e) {
+        }catch (IOException e)
+        {
             e.printStackTrace();
             return;
         }
-        producer = new KafkaProducer<>(props);
+        producer = new KafkaProducer<K,V>(props);
     }
-
-    DmsProducer() {
+    DmsProducer()
+    {
         Properties props = new Properties();
         try {
             props = loadFromClasspath(CONFIG_PRODUCER_FILE_NAME);
-        } catch (IOException e) {
+        }catch (IOException e)
+        {
             e.printStackTrace();
             return;
         }
-        producer = new KafkaProducer<>(props);
+        producer = new KafkaProducer<K,V>(props);
     }
 
     /**
-     * 生产消息
+     * Producing messages
      *
-     * @param topic     topic对象
-     * @param partition partition
-     * @param key       消息key
-     * @param data      消息数据
+     * @param topic        Topic
+     * @param partition    partition
+     * @param key          Message key
+     * @param data         Message data
      */
-    public void produce(String topic, Integer partition, K key, V data) {
-        produce(topic, partition, key, data, null, (Callback) null);
+    public void produce(String topic, Integer partition, K key, V data)
+    {
+        produce(topic, partition, key, data, null, (Callback)null);
     }
 
     /**
-     * 生产消息
+     * Producing messages
      *
-     * @param topic     topic对象
-     * @param partition partition
-     * @param key       消息key
-     * @param data      消息数据
-     * @param timestamp timestamp
+     * @param topic        Topic
+     * @param partition    partition
+     * @param key          Message key
+     * @param data         Message data
+     * @param timestamp    timestamp
      */
-    public void produce(String topic, Integer partition, K key, V data, Long timestamp) {
-        produce(topic, partition, key, data, timestamp, (Callback) null);
+    public void produce(String topic, Integer partition, K key, V data, Long timestamp)
+    {
+        produce(topic, partition, key, data, timestamp, (Callback)null);
     }
-
     /**
-     * 生产消息
+     * Producing messages
      *
-     * @param topic     topic对象
-     * @param partition partition
-     * @param key       消息key
-     * @param data      消息数据
-     * @param callback  callback
+     * @param topic        Topic
+     * @param partition    partition
+     * @param key          Message key
+     * @param data         Message data
+     * @param callback    callback
      */
-    public void produce(String topic, Integer partition, K key, V data, Callback callback) {
+    public void produce(String topic, Integer partition, K key, V data, Callback callback)
+    {
         produce(topic, partition, key, data, null, callback);
     }
 
-    public void produce(String topic, V data) {
-        produce(topic, null, null, data, null, (Callback) null);
-    }
-
-    public void produce(String topic, V data, Callback callback) {
-        produce(topic, null, null, data, null, callback);
+    public void produce(String topic, V data)
+    {
+        produce(topic, null, null, data, null, (Callback)null);
     }
 
     /**
-     * 生产消息
+     * Producing messages
      *
-     * @param topic     topic对象
-     * @param partition partition
-     * @param key       消息key
-     * @param data      消息数据
-     * @param timestamp timestamp
-     * @param callback  callback
+     * @param topic        Topic
+     * @param partition    partition
+     * @param key          Message key
+     * @param data         Message data
+     * @param timestamp    timestamp
+     * @param callback    callback
      */
-    public void produce(String topic, Integer partition, K key, V data, Long timestamp, Callback callback) {
+    public void produce(String topic, Integer partition, K key, V data, Long timestamp, Callback callback)
+    {
         ProducerRecord<K, V> kafkaRecord =
-                timestamp == null ? new ProducerRecord<>(topic, partition, key, data)
-                        : new ProducerRecord<>(topic, partition, timestamp, key, data);
+                timestamp == null ? new ProducerRecord<K, V>(topic, partition, key, data)
+                        : new ProducerRecord<K, V>(topic, partition, timestamp, key, data);
         produce(kafkaRecord, callback);
     }
 
-    public void produce(ProducerRecord<K, V> kafkaRecord) {
-        produce(kafkaRecord, (Callback) null);
+    public void produce(ProducerRecord<K, V> kafkaRecord)
+    {
+        produce(kafkaRecord, (Callback)null);
     }
 
-    public void produce(ProducerRecord<K, V> kafkaRecord, Callback callback) {
+    public void produce(ProducerRecord<K, V> kafkaRecord, Callback callback)
+    {
         producer.send(kafkaRecord, callback);
     }
 
-    public void close() {
+    public void close()
+    {
         producer.close();
     }
 
@@ -125,23 +131,55 @@ public class DmsProducer<K, V> {
      *
      * @return classloader
      */
-    public static ClassLoader getCurrentClassLoader() {
+    public static ClassLoader getCurrentClassLoader()
+    {
         ClassLoader classLoader = Thread.currentThread()
                 .getContextClassLoader();
-        if (classLoader == null) {
+        if (classLoader == null)
+        {
             classLoader = DmsProducer.class.getClassLoader();
         }
         return classLoader;
     }
 
     /**
-     * 从classpath 加载配置信息
+     * Load configuration information from classpath.
      *
-     * @param configFileName 配置文件名称
-     * @return 配置信息
+     * @param configFileName Configuration file name
+     * @return Configuration information
      * @throws IOException
      */
-    public static Properties loadFromClasspath(String configFileName) throws IOException {
-        return DmsConsumer.getProperties(configFileName, getCurrentClassLoader());
+    public static Properties loadFromClasspath(String configFileName) throws IOException
+    {
+        ClassLoader classLoader = getCurrentClassLoader();
+        Properties config = new Properties();
+
+        List<URL> properties = new ArrayList<URL>();
+        Enumeration<URL> propertyResources = classLoader
+                .getResources(configFileName);
+        while (propertyResources.hasMoreElements())
+        {
+            properties.add(propertyResources.nextElement());
+        }
+
+        for (URL url : properties)
+        {
+            InputStream is = null;
+            try
+            {
+                is = url.openStream();
+                config.load(is);
+            }
+            finally
+            {
+                if (is != null)
+                {
+                    is.close();
+                    is = null;
+                }
+            }
+        }
+
+        return config;
     }
 }

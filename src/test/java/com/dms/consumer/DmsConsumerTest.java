@@ -4,13 +4,14 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 public class DmsConsumerTest {
     @Test
     public void testConsumer() throws Exception {
         DmsConsumer consumer = new DmsConsumer();
-        consumer.consume(Collections.singletonList("topic-1502228232"));
+        consumer.consume(Collections.singletonList("topic-test"));
         try {
             for (int i = 0; i < 10; i++) {
                 ConsumerRecords<Object, Object> records = consumer.poll(1000);
@@ -20,6 +21,7 @@ public class DmsConsumerTest {
                 }
             }
         } catch (Exception e) {
+            // TODO: Exception handling
             e.printStackTrace();
         } finally {
             consumer.close();
